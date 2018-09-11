@@ -30,25 +30,8 @@ else:
 
 def parse_environ_block(data):
     """Parse a C environ block of environment variables into a dictionary."""
-    # The block is usually raw data from the target process.  It might contain
-    # trailing garbage and lines that do not look like assignments.
-    ret = {}
-    pos = 0
-
-    while True:
-        next_pos = data.find("\0", pos)
-        # nul byte at the beginning or double nul byte means finish
-        if next_pos <= pos:
-            break
-        # there might not be an equals sign
-        equal_pos = data.find("=", pos, next_pos)
-        if equal_pos > pos:
-            key = data[pos:equal_pos]
-            value = data[equal_pos + 1:next_pos]
-            ret[key] = value
-        pos = next_pos + 1
-
-    return ret
+    data = data.rstrip('\0') # nul byte(s) at the beginning means finish
+    return {(d.split('=', 1) for d in data.split('\0') if data)}
 
 
 def environ_of_process(pid):
